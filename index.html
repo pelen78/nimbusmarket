@@ -2052,9 +2052,14 @@ async function handleSignup() {
         });
 
     </script>
-    <script type="module">
+   <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
+  import { 
+    getFirestore, 
+    doc, 
+    getDoc, 
+    updateDoc 
+  } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDp3nG7apyi9WqsXneUrYy8zWN-8AsQoR4",
@@ -2067,6 +2072,14 @@ async function handleSignup() {
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+
+  // 👇 EXPONER A WINDOW (CLAVE)
+  window.db = db;
+  window.doc = doc;
+  window.getDoc = getDoc;
+  window.updateDoc = updateDoc;
+</script>
+
 
   // 🔁 Hacemos global la función para que el HTML la pueda usar
   window.checkInviteCode = async function () {
