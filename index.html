@@ -1442,51 +1442,51 @@
                 switchView('feed');
             }
         }
+       async function handleSignup() {
 
-    
+    if (!checkInviteCode()) return;
 
-        function handleSignup() {
-            if (!checkInviteCode()) return; // Double check
+    const name = document.getElementById('regName').value;
+    const email = document.getElementById('regEmail').value;
+    const pass = document.getElementById('regPass').value;
+    const passConfirm = document.getElementById('regPassConfirm').value;
 
-            const name = document.getElementById('regName').value;
-            const email = document.getElementById('regEmail').value;
-            const pass = document.getElementById('regPass').value;
-            const passConfirm = document.getElementById('regPassConfirm').value;
-            // Invite code optional
+    if (!name || !email || !pass) {
+        alert('Please fill in all required fields.');
+        return;
+    }
 
-            if (!name || !email || !pass) {
-                alert('Please fill in all required fields.');
-                return;
-            }
+    if (pass !== passConfirm) {
+        alert('Passwords do not match.');
+        return;
+    }
 
-            if (pass !== passConfirm) {
-                alert('Passwords do not match.');
-                return;
-            }
+    ME = {
+        id: Date.now(),
+        name,
+        email,
+        img: 'https://i.pravatar.cc/150?u=me',
+        bio: '',
+        joined: 'Member since ' + new Date().getFullYear()
+    };
 
-            // Create NEW User based on signup
-            ME = {
-                id: Date.now(),
-                name: name,
-                email: email,
-                img: 'https://i.pravatar.cc/150?u=me', // Default
-                bio: '',
-                joined: 'Member since ' + new Date().getFullYear()
-            };
+    USERS.push(ME);
 
-            // Add to USERS list immediately
-            USERS.push(ME);
+    try {
+        const inviteCode = document.getElementById("regInvite").value.trim().toUpperCase();
+        const codeRef = doc(db, "inviteCodes", inviteCode);
+        await updateDoc(codeRef, { used: true });
+    } catch (err) {
+        alert("Error validando código");
+        console.error(err);
+        return;
+    }
 
-            // Persist
-            try { localStorage.setItem('nimbus_user', JSON.stringify(ME)); } catch (e) { console.error(e); }
+    localStorage.setItem('nimbus_user', JSON.stringify(ME));
+    localStorage.removeItem('nimbus_welcome_seen');
 
-            // Force Welcome Modal for new sign up
-            // We remove the flag so handleLogin sees it as "not seen"
-            localStorage.removeItem('nimbus_welcome_seen');
-
-            // Log in logic (will show modal)
-            handleLogin();
-        }
+    handleLogin();
+}
 
         function closeWelcome() {
             const modal = document.getElementById('welcomeModal');
