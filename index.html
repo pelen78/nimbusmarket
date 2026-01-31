@@ -1,0 +1,2063 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nimbus Marketplace</title>
+    <style>
+        :root {
+            /* Color Palette - Light Pink Theme */
+            --bg-dark: #fff0f5;
+            /* Lavender Blush */
+            --bg-card: rgba(255, 255, 255, 0.65);
+            --bg-glass: rgba(255, 255, 255, 0.85);
+            --accent-primary: #0088ff;
+            /* Adjusted for light mode contrast */
+            --accent-secondary: #ff0055;
+            --text-main: #1a1a1a;
+            --text-secondary: #555555;
+            --border-glass: rgba(0, 0, 0, 0.05);
+
+            /* Spacing */
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+
+            /* Radius */
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --radius-full: 9999px;
+
+            /* Shadows */
+            --glow-primary: 0 4px 20px rgba(0, 136, 255, 0.2);
+            --glow-secondary: 0 4px 20px rgba(255, 0, 85, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding-bottom: 80px;
+            /* Space for nav */
+            overflow-x: hidden;
+        }
+
+        /* --- Utilities --- */
+        .glass {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glass);
+        }
+
+        .glass-panel {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border-glass);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .icon {
+            width: 24px;
+            height: 24px;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+
+        /* --- Layout --- */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            padding: var(--spacing-md);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header .avatar-sm {
+            position: absolute;
+            right: var(--spacing-md);
+        }
+
+        .brand {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .avatar-sm {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, #333, #555);
+            overflow: hidden;
+        }
+
+        .avatar-sm img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* --- Stories / Friends --- */
+        .stories-container {
+            padding: 0 var(--spacing-md) var(--spacing-md);
+            overflow-x: auto;
+            display: flex;
+            gap: var(--spacing-md);
+            scrollbar-width: none;
+            /* Firefox */
+        }
+
+        .stories-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .story-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--spacing-xs);
+            min-width: 64px;
+        }
+
+        .story-ring {
+            width: 64px;
+            height: 64px;
+            border-radius: var(--radius-full);
+            padding: 3px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        }
+
+        .story-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: var(--radius-full);
+            border: 3px solid var(--bg-dark);
+            background: #333;
+            overflow: hidden;
+        }
+
+        .story-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .story-name {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* --- Feed --- */
+        .feed {
+            padding: 0 var(--spacing-md);
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+
+        .card {
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card-image {
+            width: 100%;
+            aspect-ratio: 4/5;
+            background-color: #222;
+            position: relative;
+        }
+
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .price-tag {
+            position: absolute;
+            top: var(--spacing-md);
+            right: var(--spacing-md);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            padding: 6px 12px;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            color: var(--accent-primary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-content {
+            padding: var(--spacing-md);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .time-ago {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .card-desc {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: var(--spacing-md);
+            line-height: 1.4;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* --- Navigation --- */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: 20px;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 10px;
+            width: 60px;
+        }
+
+        .nav-item.active {
+            color: var(--accent-primary);
+        }
+
+        .nav-item.active .icon {
+            filter: drop-shadow(0 0 8px var(--accent-primary));
+        }
+
+        .fab-container {
+            position: relative;
+            top: -24px;
+            /* left: 50%; transf: translateX(-50%); REMOVED for flex flow */
+        }
+
+        .fab {
+            width: 64px;
+            height: 64px;
+            border-radius: var(--radius-full);
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0, 242, 234, 0.4);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .fab:active {
+            transform: translateX(-50%) scale(0.95);
+        }
+
+        /* --- Modal --- */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 200;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .modal.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal.open .modal-sheet {
+            transform: translateY(0);
+        }
+
+        .modal-sheet {
+            width: 100%;
+            background: #ffffff;
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            padding: 24px;
+            padding-bottom: 40px;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            border-top: 1px solid var(--border-glass);
+            color: #1a1a1a;
+        }
+
+        .sheet-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            align-items: center;
+        }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-group label {
+            display: block;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .input-field {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 12px;
+            border-radius: 12px;
+            color: black;
+            font-size: 16px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border: none;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            margin-top: 16px;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #ccc;
+            /* Fallback */
+            background: linear-gradient(135deg, #ccc, #999);
+        }
+
+        /* Password Toggle */
+        .password-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            padding: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Photo Upload Styles */
+        .upload-area {
+            border: 2px dashed var(--border-glass);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 16px;
+            background: rgba(0, 0, 0, 0.02);
+            transition: all 0.2s;
+        }
+
+        .upload-area:hover,
+        .upload-area.dragover {
+            border-color: var(--accent-primary);
+            background: rgba(0, 136, 255, 0.05);
+        }
+
+        .upload-text {
+            color: var(--text-secondary);
+            font-size: 12px;
+            pointer-events: none;
+        }
+
+        .preview-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            /* Scrollbar space if needed */
+        }
+
+        .preview-thumb {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid var(--border-glass);
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .preview-wrapper {
+            position: relative;
+            width: 60px;
+            height: 60px;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 18px;
+            height: 18px;
+            background: var(--accent-secondary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            border: 1px solid white;
+            z-index: 10;
+        }
+
+        /* --- Messaging & View Styles --- */
+        .view {
+            display: none;
+            padding-bottom: 20px;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* Comments */
+        .comments-section {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-glass);
+        }
+
+        .comment {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .comment-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .comment-content b {
+            margin-right: 4px;
+            color: var(--text-main);
+        }
+
+        .comment-input-area {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .comment-input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.05);
+            border: none;
+            border-radius: 12px;
+            padding: 8px 12px;
+            color: var(--text-main);
+            font-size: 13px;
+        }
+
+        /* Chat List */
+        .chat-list-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-glass);
+            cursor: pointer;
+        }
+
+        .chat-info {
+            flex: 1;
+        }
+
+        .chat-preview {
+            font-size: 13px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Chat Thread */
+        .chat-thread-header {
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-glass);
+            background: var(--bg-glass);
+            position: sticky;
+            top: 0;
+            z-index: 40;
+        }
+
+        .messages-container {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message-bubble {
+            max-width: 75%;
+            padding: 10px 14px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .message-bubble.me {
+            align-self: flex-end;
+            background: var(--accent-primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message-bubble.them {
+            align-self: flex-start;
+            background: white;
+            color: black;
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--border-glass);
+        }
+
+        .chat-input-bar {
+            position: fixed;
+            bottom: 80px;
+            /* Above nav */
+            left: 0;
+            right: 0;
+            padding: 12px;
+            background: var(--bg-glass);
+            display: flex;
+            gap: 8px;
+            border-top: 1px solid var(--border-glass);
+        }
+
+        /* Profile Styles */
+        .profile-header {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .profile-avatar-lg {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            /* overflow: hidden; Removed to allow badge to overlap */
+        }
+
+        .profile-avatar-lg img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid var(--border-glass);
+        }
+
+        .edit-badge {
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            background: var(--accent-primary);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: black;
+            font-size: 14px;
+            cursor: pointer;
+            border: 2px solid #fff;
+            z-index: 10;
+        }
+
+        .profile-name {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .profile-bio {
+            color: var(--text-secondary);
+            font-size: 14px;
+            max-width: 80%;
+            line-height: 1.4;
+        }
+
+        .profile-meta {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            opacity: 0.7;
+        }
+
+        .profile-items-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            padding: 16px;
+        }
+
+        .grid-item {
+            aspect-ratio: 4/5;
+            background: #222;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .grid-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .grid-price {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            color: white;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+
+        .edit-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-glass);
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        /* Login Styles */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+            text-align: center;
+            background: var(--bg-dark);
+            /* Ensure solid background */
+        }
+
+        .login-logo {
+            height: 120px;
+            object-fit: contain;
+            margin-bottom: 40px;
+        }
+
+        .login-form {
+            width: 100%;
+            max-width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .social-btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 16px;
+            border: 1px solid var(--border-glass);
+            background: rgba(255, 255, 255, 0.8);
+            color: black;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .social-btn:active {
+            transform: scale(0.98);
+        }
+
+        .social-btn.facebook {
+            background: #1877F2;
+            color: white;
+            border: none;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 12px;
+            margin: 16px 0;
+            width: 100%;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: var(--border-glass);
+        }
+
+        .divider span {
+            padding: 0 12px;
+        }
+
+        /* Welcome Modal */
+        .welcome-content {
+            background: var(--bg-glass);
+            padding: 32px;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 340px;
+            text-align: center;
+            border: 1px solid var(--border-glass);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .welcome-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: var(--gradient-text);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .welcome-text {
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-main);
+            margin-bottom: 24px;
+        }
+
+        /* Language Toggle */
+        .lang-toggle {
+            display: flex;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            padding: 4px;
+            margin-top: 12px;
+            border: 1px solid var(--border-glass);
+        }
+
+        .lang-btn {
+            padding: 6px 16px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .lang-btn.active {
+            background: white;
+            color: black;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Login View -->
+    <div class="view active" id="loginView">
+        <div class="login-container">
+            <img src="logo.png" alt="Nimbus" class="login-logo">
+
+            <div class="login-form">
+                <input type="email" class="input-field" placeholder="Email" id="loginEmail">
+                <input type="password" class="input-field" placeholder="Password" id="loginPass">
+                <button class="btn-primary" onclick="handleLogin()" data-t="login_btn">Log In</button>
+
+                <button
+                    style="background:none; border:none; color:var(--text-secondary); font-size:12px; font-weight:600; margin-top:-8px;">
+                    <span data-t="no_account">Don't have an account?</span> <span style="color:var(--accent-primary);"
+                        data-t="signup" onclick="switchView('signupView')">Sign Up</span>
+                </button>
+
+                <!-- Social Auth (Disabled temporarily) -->
+                <div style="display:none;">
+                    <div class="divider"><span>OR</span></div>
+
+                    <button class="social-btn" onclick="handleLogin()">
+                        <svg style="width:18px; height:18px;" viewBox="0 0 24 24">
+                            <path
+                                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                                fill="#4285F4" />
+                            <path
+                                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                fill="#34A853" />
+                            <path
+                                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.26.81-.58z"
+                                fill="#FBBC05" />
+                            <path
+                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                fill="#EA4335" />
+                        </svg>
+                        <span data-t="google_continue">Continue with Google</span>
+                    </button>
+
+                    <button class="social-btn facebook" onclick="handleLogin()">
+                        <svg style="width:18px; height:18px; fill:white;" viewBox="0 0 24 24">
+                            <path
+                                d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                        </svg>
+                        <span data-t="fb_continue">Continue with Facebook</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sign Up View -->
+    <div class="view" id="signupView">
+        <div class="login-container">
+            <img src="logo.png" alt="Nimbus" class="login-logo" style="height: 80px; margin-bottom: 24px;">
+            <h2 style="margin-bottom: 24px; font-size: 20px;" data-t="create_account">Create Account</h2>
+
+            <div class="login-form">
+                <input type="text" class="input-field" placeholder="Full Name" id="regName" data-p="full_name">
+                <input type="email" class="input-field" placeholder="Email" id="regEmail" data-p="email">
+
+                <div class="password-wrapper" style="margin-bottom: 12px;">
+                    <input type="password" class="input-field" placeholder="Password" id="regPass" data-p="password"
+                        style="margin-bottom: 0;">
+                    <button class="password-toggle" onclick="togglePassword(this)">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="password-wrapper" style="margin-bottom: 12px;">
+                    <input type="password" class="input-field" placeholder="Confirm Password" id="regPassConfirm"
+                        data-p="confirm_password" style="margin-bottom: 0;">
+                    <button class="password-toggle" onclick="togglePassword(this)">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                </div>
+
+                <input type="text" class="input-field" placeholder="Invitation Code" id="regInvite"
+                    data-p="invite_placeholder" oninput="checkInviteCode()" style="margin-bottom:4px;">
+                <div id="inviteFeedback"
+                    style="font-size:12px; color:var(--text-secondary); margin-bottom:16px; min-height:16px;">Registro
+                    solo por invitación</div>
+
+                <button class="btn-primary" onclick="handleSignup()" data-t="signup_btn" id="signupBtn" disabled>Sign
+                    Up</button>
+
+                <button
+                    style="background:none; border:none; color:var(--text-secondary); font-size:12px; font-weight:600; margin-top:8px;"
+                    onclick="switchView('loginView')">
+                    <span data-t="already_have">Already have an account?</span> <span
+                        style="color:var(--accent-primary);" data-t="login_btn">Log In</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header glass" style="display:none;" id="mainHeader">
+        <img src="logo.png" alt="Nimbus Marketplace" style="height: 80px; object-fit: contain;">
+    </header>
+
+    <!-- Stories -->
+    <div class="stories-container" id="storiesBar" style="display:none;">
+        <!-- Rendered by JS -->
+    </div>
+
+    <!-- Main Feed -->
+    <main class="feed view" id="feed">
+        <!-- Rendered by JS -->
+    </main>
+
+    <!-- Chats View -->
+    <div class="view" id="chatsView" style="padding-bottom: 100px;">
+        <h2 style="padding: 16px 16px 8px; font-size: 24px;" data-t="messages_title">Messages</h2>
+        <div id="chatsListContainer">
+            <!-- Rendered by JS -->
+        </div>
+    </div>
+
+    <!-- Chat Thread View -->
+    <div class="view" id="chatThreadView" style="padding-bottom: 140px; min-height: 100vh;">
+        <!-- Rendered by JS -->
+    </div>
+
+    <!-- Profile View -->
+    <div class="view" id="profileView">
+        <!-- Rendered by JS -->
+    </div>
+
+    <!-- Footer -->
+    <footer
+        style="text-align: center; padding: 20px; color: var(--text-secondary); font-size: 10px; margin-bottom: 20px;">
+        &copy; 2026 Nimbus Marketplace. All rights reserved &middot; v1.0
+    </footer>
+
+    <!-- Navigation -->
+    <nav class="nav-bar glass-panel" style="display:none;" id="mainNav">
+        <a href="#" class="nav-item active" onclick="switchView('feed')">
+            <svg class="icon" viewBox="0 0 24 24">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span data-t="nav_home">Home</span>
+        </a>
+        <a href="#" class="nav-item" onclick="switchView('feed')">
+            <svg class="icon" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span data-t="nav_search">Search</span>
+        </a>
+
+        <div class="fab-container">
+            <button class="fab" onclick="toggleSellModal()">
+                <svg class="icon" style="width: 32px; height: 32px; stroke: white;" viewBox="0 0 24 24">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+            </button>
+        </div>
+
+        <a href="#" class="nav-item" onclick="switchView('chatsView')">
+            <svg class="icon" viewBox="0 0 24 24">
+                <path
+                    d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z">
+                </path>
+            </svg>
+            <span data-t="nav_chats">Chats</span>
+        </a>
+
+        <!-- Avatar Nav Item -->
+        <div class="nav-item" onclick="toggleAccountMenu()" style="cursor: pointer;">
+            <div class="avatar-sm" style="width: 24px; height: 24px; border: 2px solid var(--text-secondary);">
+                <img src="https://i.pravatar.cc/150?u=me" alt="Me" id="navAvatarImg">
+            </div>
+            <span data-t="account_menu">Account</span>
+        </div>
+    </nav>
+
+    <!-- Account Menu Modal -->
+    <div class="modal" id="accountModal">
+        <div class="modal-sheet">
+            <div class="sheet-header">
+                <h2 style="font-size: 20px;" data-t="account_menu">Account</h2>
+                <button onclick="toggleAccountMenu()" style="background:none; border:none; color:var(--text-main);">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <button class="btn-secondary" onclick="openMyProfile()"
+                    style="text-align:left; padding:16px; border-radius:12px; background:rgba(0,0,0,0.05); border:none; font-size:16px; display:flex; align-items:center; gap:12px; cursor:pointer; color:var(--text-main);">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    <span data-t="nav_profile">My Profile</span>
+                </button>
+
+                <button class="btn-secondary" onclick="menuEditProfile()"
+                    style="text-align:left; padding:16px; border-radius:12px; background:rgba(0,0,0,0.05); border:none; font-size:16px; display:flex; align-items:center; gap:12px; cursor:pointer; color:var(--text-main);">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M12 20h9"></path>
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                    </svg>
+                    <span data-t="edit_profile">Edit Profile</span>
+                </button>
+
+                <button class="btn-secondary" onclick="toggleLanguage()"
+                    style="text-align:left; padding:16px; border-radius:12px; background:rgba(0,0,0,0.05); border:none; font-size:16px; display:flex; align-items:center; gap:12px; cursor:pointer; color:var(--text-main);">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path
+                            d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                        </path>
+                    </svg>
+                    <span data-t="language">Language</span>: <span id="langDisplay">ES</span>
+                </button>
+
+                <button class="btn-secondary" onclick="logout()"
+                    style="text-align:left; padding:16px; border-radius:12px; background:rgba(255, 68, 68, 0.1); color:#ff4444; border:none; font-size:16px; display:flex; align-items:center; gap:12px; font-weight:600; cursor:pointer;">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    <span data-t="logout">Log Out</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Welcome Modal -->
+    <div class="modal" id="welcomeModal" style="display:none; align-items:center; justify-content:center;">
+        <div class="welcome-content">
+            <div class="welcome-title" id="welcomeTitle">Bienvenida a Nimbus 👋</div>
+            <div class="welcome-text" id="welcomeText">
+                Este es un espacio privado para vender y comprar entre personas que se conocen y confían.<br>
+                Publica con tranquilidad, pregunta con respeto y cuida esta comunidad.
+            </div>
+            <button class="btn-primary" onclick="closeWelcome()" id="welcomeBtn">Continuar</button>
+        </div>
+    </div>
+
+    <!-- Sell Modal -->
+    <div class="modal" id="sellModal">
+        <div class="modal-sheet">
+            <div class="sheet-header">
+                <h2 style="font-size: 20px;" data-t="sell_item">Sell Item</h2>
+                <button onclick="toggleSellModal()" style="background:none; border:none; color:var(--text-main);">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Photo Upload Section -->
+            <div class="input-group">
+                <label>Photos (Max 5)</label>
+                <div class="upload-area" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-text">
+                        <svg class="icon"
+                            style="width:24px; height:24px; margin-bottom:4px; stroke:var(--accent-primary);"
+                            viewBox="0 0 24 24">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <br>Click or Drop to Upload
+                    </div>
+                </div>
+                <input type="file" id="fileInput" hidden multiple accept="image/png, image/jpeg, image/jpg">
+                <div class="preview-container" id="previewContainer">
+                    <!-- Previews go here -->
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Item Name</label>
+                <input type="text" class="input-field" id="itemTitle" placeholder="e.g. Vintage Camera">
+            </div>
+            <div class="input-group">
+                <label>Price ($)</label>
+                <input type="number" class="input-field" id="itemPrice" placeholder="50">
+            </div>
+            <div class="input-group">
+                <label>Description</label>
+                <input type="text" class="input-field" id="itemDesc" placeholder="Briefly describe it...">
+            </div>
+            <button class="btn-primary" id="listBtn" onclick="postItem()" disabled>List Item</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Translations ---
+        const TRANSLATIONS = {
+            'es': {
+                'login_btn': 'Iniciar Sesión',
+                'no_account': '¿No tienes cuenta?',
+                'signup': 'Regístrate',
+                'google_continue': 'Continuar con Google',
+                'fb_continue': 'Continuar con Facebook',
+                'nav_home': 'Inicio',
+                'nav_search': 'Buscar',
+                'nav_chats': 'Chats',
+                'nav_profile': 'Perfil',
+                'messages_title': 'Mensajes',
+                'sell_item': 'Vender Artículo',
+                'msg_seller': 'Mensajar', // Shortened for button w
+                'my_listings': 'Mis Publicaciones',
+                'listings': 'Publicaciones',
+                'member_since': 'Miembro desde',
+                'edit_profile': 'Editar Perfil',
+                'cancel': 'Cancelar',
+                'save': 'Guardar',
+                'no_bio': 'Sin biografía.',
+                'no_messages': 'No hay mensajes.',
+                'start_conv': '¡Empieza la conversación!',
+                'global_comment': 'Comentario público...',
+                'post': 'Publicar',
+                'welcome_title': 'Bienvenida a Nimbus 👋',
+                'welcome_text': 'Este es un espacio privado para vender y comprar entre personas que se conocen y confían.<br>Publica con tranquilidad, pregunta con respeto y cuida esta comunidad.',
+                'continue': 'Continuar',
+                'list_item': 'Publicar',
+                'create_account': 'Crear Cuenta',
+                'full_name': 'Nombre Completo',
+                'email': 'Correo Electrónico',
+                'password': 'Contraseña',
+                'confirm_password': 'Confirmar Contraseña',
+                'signup_btn': 'Registrarse',
+                'already_have': '¿Ya tienes cuenta?',
+                'no_own_listings': 'Aún no has publicado ningún artículo',
+                'no_user_listings': 'Este usuario no tiene publicaciones',
+                'invited_only': 'Registro solo por invitación',
+                'invalid_code': 'Código de invitación no válido',
+                'invite_placeholder': 'Código de Invitación',
+                'logout': 'Cerrar Sesión',
+                'you': 'Tú',
+                'account_menu': 'Cuenta',
+                'language': 'Idioma'
+            },
+            'en': {
+                'login_btn': 'Log In',
+                'no_account': 'Don\'t have an account?',
+                'signup': 'Sign Up',
+                'google_continue': 'Continue with Google',
+                'fb_continue': 'Continue with Facebook',
+                'nav_home': 'Home',
+                'nav_search': 'Search',
+                'nav_chats': 'Chats',
+                'nav_profile': 'Profile',
+                'messages_title': 'Messages',
+                'sell_item': 'Sell Item',
+                'msg_seller': 'Message',
+                'my_listings': 'My Listings',
+                'listings': 'Listings',
+                'member_since': 'Member since',
+                'edit_profile': 'Edit Profile',
+                'cancel': 'Cancel',
+                'save': 'Save',
+                'no_bio': 'No bio yet.',
+                'no_messages': 'No messages yet.',
+                'start_conv': 'Start the conversation!',
+                'global_comment': 'Global comment...',
+                'post': 'Post',
+                'welcome_title': 'Welcome to Nimbus 👋',
+                'welcome_text': 'This is a private space to buy and sell among people who know and trust each other.<br>Post with peace of mind, ask with respect, and take care of this community.',
+                'continue': 'Continue',
+                'list_item': 'List Item',
+                'create_account': 'Create Account',
+                'full_name': 'Full Name',
+                'email': 'Email',
+                'password': 'Password',
+                'confirm_password': 'Confirm Password',
+                'signup_btn': 'Sign Up',
+                'invited_only': 'Registration by invitation only',
+                'invalid_code': 'Invalid invitation code',
+                'invite_placeholder': 'Invitation Code',
+                'already_have': 'Already have an account?',
+                'no_own_listings': 'You haven\'t listed any items yet',
+                'no_user_listings': 'This user has no listings',
+                'logout': 'Log Out',
+                'you': 'You',
+                'account_menu': 'Account',
+                'language': 'Language'
+            }
+        };
+
+        // State
+        let storedLang = localStorage.getItem('nimbus_lang');
+        let currentLang = (storedLang === 'en' || storedLang === 'es') ? storedLang : 'es';
+
+        function t(key) {
+            const dict = TRANSLATIONS[currentLang] || TRANSLATIONS['es'];
+            return dict[key] || key;
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('nimbus_lang', lang);
+            updateUIText();
+            renderProfile(ME.id); // Re-render profile to update toggle UI
+            renderFeed(); // Re-render feed items for button text
+
+            // Update lang display in menu
+            const disp = document.getElementById('langDisplay');
+            if (disp) disp.innerText = lang.toUpperCase();
+        }
+
+        function updateUIText() {
+            const t = (key) => TRANSLATIONS[currentLang][key] || key;
+            document.querySelectorAll('[data-t]').forEach(el => {
+                el.innerText = t(el.getAttribute('data-t'));
+            });
+            // Also update placeholder inputs
+            const inputs = document.querySelectorAll('input[data-p]');
+            inputs.forEach(el => {
+                el.placeholder = t(el.getAttribute('data-p'));
+            });
+
+            // Sync Nav Avatar
+            updateNavAvatar();
+
+            // Specific ID updates for Welcome Modal
+            const wTitle = document.getElementById('welcomeTitle');
+            if (wTitle) wTitle.innerHTML = t('welcome_title');
+
+            const wText = document.getElementById('welcomeText');
+            if (wText) wText.innerHTML = t('welcome_text');
+
+            const wBtn = document.getElementById('welcomeBtn');
+            if (wBtn) wBtn.innerText = t('continue');
+
+            const listBtn = document.getElementById('listBtn');
+            if (listBtn) listBtn.innerText = t('list_item');
+
+            // Update invite feedback if present
+            const inviteFeedback = document.getElementById('inviteFeedback');
+            if (inviteFeedback && document.getElementById('signupView').classList.contains('active')) {
+                // Only update if signup view is active and code is empty
+                if (document.getElementById('regInvite').value.trim().length === 0) {
+                    inviteFeedback.innerText = t('invited_only');
+                }
+            }
+        }
+
+        // --- Mock Data ---
+        const USERS = [
+            { id: 1, name: 'Alex', img: 'https://i.pravatar.cc/150?u=1', bio: 'Vintage hunter and coffee lover.', joined: 'Member since 2024' },
+            { id: 2, name: 'Sarah', img: 'https://i.pravatar.cc/150?u=2', bio: 'Tech enthusiast. Selling my old gear.', joined: 'Member since 2025' },
+            { id: 3, name: 'Jordan', img: 'https://i.pravatar.cc/150?u=3', bio: 'Fashion designer.', joined: 'Member since 2023' },
+            { id: 4, name: 'Mike', img: 'https://i.pravatar.cc/150?u=4', bio: '', joined: 'Member since 2025' },
+            { id: 5, name: 'Emma', img: 'https://i.pravatar.cc/150?u=5', bio: 'Artist.', joined: 'Member since 2024' }
+        ];
+
+        // Current User Mock
+        // Current User Mock
+        let ME;
+        try {
+            ME = JSON.parse(localStorage.getItem('nimbus_user'));
+            // Validate integrity
+            if (ME && (!ME.id || !ME.name)) {
+                ME = null; // Reset if corrupted
+            }
+        } catch (e) { ME = null; }
+
+        if (!ME) ME = { id: 999, name: 'You', img: 'https://i.pravatar.cc/150?u=me', bio: 'Just here to sell some cool stuff.', joined: 'Member since 2026' };
+
+        // Add ME to USERS so renderProfile can find it
+        USERS.push(ME);
+
+        let items = [
+            {
+                id: 101,
+                user: USERS[0],
+                title: 'Vintage Leather Jacket',
+                price: 150,
+                desc: 'Genuine leather, size M. Great condition.',
+                img: 'https://images.unsplash.com/photo-1551028919-601633c1c4bf?w=800&q=80',
+                time: '2h ago',
+                likes: 24,
+                comments: [
+                    { user: USERS[2], text: 'Is this still available?' },
+                    { user: USERS[0], text: 'Yes! DM me if interested.' }
+                ]
+            },
+            {
+                id: 102,
+                user: USERS[1],
+                title: 'Espresso Machine',
+                price: 320,
+                desc: 'Breville Barista Express. Used for 6 months.',
+                img: 'https://images.unsplash.com/photo-1590673846749-e2fb8f655df8?w=800&q=80',
+                time: '5h ago',
+                likes: 41,
+                comments: []
+            }
+        ];
+
+        let chats = [
+            /*
+            {
+               id: 1,
+               participants: [USERS[0], ME],
+               item: items[0],
+               messages: [ { sender: 'them', text: 'Hi!' } ]
+            }
+            */
+        ];
+
+        let activeChatId = null;
+
+        let uploadedFiles = []; // Store file objects
+
+        // --- Render Functions ---
+        function switchView(viewName, param) {
+            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+            // Show/Hide Header & Nav based on view
+            if (viewName === 'loginView' || viewName === 'signupView') {
+                document.getElementById('mainHeader').style.display = 'none';
+                document.getElementById('mainNav').style.display = 'none';
+                document.getElementById('storiesBar').style.display = 'none';
+                document.getElementById(viewName).classList.add('active');
+                // If switching to signup, initialize invite feedback
+                if (viewName === 'signupView') {
+                    const inviteInput = document.getElementById('regInvite');
+                    const signupBtn = document.getElementById('signupBtn');
+                    const inviteFeedback = document.getElementById('inviteFeedback');
+                    if (inviteInput) inviteInput.value = ''; // Clear input
+                    if (signupBtn) signupBtn.disabled = true; // Disable button
+                    if (inviteFeedback) {
+                        inviteFeedback.innerText = t('invited_only');
+                        inviteFeedback.style.color = 'var(--text-secondary)';
+                    }
+                }
+                return;
+            } else {
+                document.getElementById('mainHeader').style.display = 'flex';
+                document.getElementById('mainNav').style.display = 'flex';
+                document.getElementById('storiesBar').style.display = 'flex';
+            }
+
+            if (viewName === 'feed') {
+                document.getElementById('feed').classList.add('active');
+                if (document.querySelectorAll('.nav-item')[0]) document.querySelectorAll('.nav-item')[0].classList.add('active'); // Highlight Home
+                renderFeed();
+            } else if (viewName === 'chatsView') {
+                document.getElementById('chatsView').classList.add('active');
+                if (document.querySelectorAll('.nav-item')[2]) document.querySelectorAll('.nav-item')[2].classList.add('active'); // Highlight Chats
+                renderChatsList();
+            } else if (viewName === 'chatThreadView') {
+                document.getElementById('chatThreadView').classList.add('active');
+            } else if (viewName === 'profileView') {
+                document.getElementById('profileView').classList.add('active');
+                // No Nav Item to highlight anymore
+                renderProfile(param || ME.id);
+            }
+        }
+
+        function handleLogin() {
+            // Check welcome status first
+            const seen = localStorage.getItem('nimbus_welcome_seen');
+
+            if (!seen) {
+                // Show welcome modal
+                const modal = document.getElementById('welcomeModal');
+                modal.style.display = 'flex';
+                // Add open class to fix opacity/pointer-events
+                setTimeout(() => modal.classList.add('open'), 10);
+            } else {
+                // Normal login - go to feed
+                switchView('feed');
+            }
+        }
+
+        function checkInviteCode() {
+            const code = document.getElementById('regInvite').value.trim().toUpperCase();
+            const btn = document.getElementById('signupBtn');
+            const feedback = document.getElementById('inviteFeedback');
+
+            // Mock Valid Codes
+            const VALID_CODES = ['NIMBUS', 'WELCOME', 'VIP2026'];
+
+            if (code.length === 0) {
+                btn.disabled = true;
+                feedback.innerText = t('invited_only');
+                feedback.style.color = 'var(--text-secondary)';
+                return false;
+            }
+
+            if (VALID_CODES.includes(code)) {
+                btn.disabled = false;
+                feedback.innerText = ''; // Clear text on valid
+                return true;
+            } else {
+                btn.disabled = true;
+                feedback.innerText = t('invalid_code');
+                feedback.style.color = '#ff4444';
+                return false;
+            }
+        }
+
+        function handleSignup() {
+            if (!checkInviteCode()) return; // Double check
+
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const pass = document.getElementById('regPass').value;
+            const passConfirm = document.getElementById('regPassConfirm').value;
+            // Invite code optional
+
+            if (!name || !email || !pass) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            if (pass !== passConfirm) {
+                alert('Passwords do not match.');
+                return;
+            }
+
+            // Create NEW User based on signup
+            ME = {
+                id: Date.now(),
+                name: name,
+                email: email,
+                img: 'https://i.pravatar.cc/150?u=me', // Default
+                bio: '',
+                joined: 'Member since ' + new Date().getFullYear()
+            };
+
+            // Add to USERS list immediately
+            USERS.push(ME);
+
+            // Persist
+            try { localStorage.setItem('nimbus_user', JSON.stringify(ME)); } catch (e) { console.error(e); }
+
+            // Force Welcome Modal for new sign up
+            // We remove the flag so handleLogin sees it as "not seen"
+            localStorage.removeItem('nimbus_welcome_seen');
+
+            // Log in logic (will show modal)
+            handleLogin();
+        }
+
+        function closeWelcome() {
+            const modal = document.getElementById('welcomeModal');
+            modal.classList.remove('open');
+            localStorage.setItem('nimbus_welcome_seen', 'true');
+
+            // Switch background to feed immediately so fade-out reveals it
+            switchView('feed');
+
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        function renderProfile(userId) {
+            const isMe = userId === ME.id;
+            const user = isMe ? ME : USERS.find(u => u.id === userId) || ME;
+
+            // Filter user items by ID (strict check)
+            const userItems = items.filter(i => i.user.id === user.id);
+
+            const container = document.getElementById('profileView');
+            container.innerHTML = `
+                <div class="profile-header">
+                    <div class="profile-avatar-lg">
+                        <img src="${user.img}" id="profileImgPreview">
+                        ${isMe ? `<label for="avatarInput" class="edit-badge"><svg class="icon" style="width:16px; height:16px;" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></label><input type="file" id="avatarInput" hidden accept="image/*" onchange="updateProfileAvatar(this)">` : ''}
+                    </div>
+                    
+                    <div id="profileInfoDisplay">
+                        <div class="profile-name">${user.name === 'You' ? t('you') : user.name}</div>
+                        <div class="profile-bio">${user.bio || t('no_bio')}</div>
+                    
+                        ${isMe ? `
+                        <div class="lang-toggle">
+                            <button class="lang-btn ${currentLang === 'es' ? 'active' : ''}" onclick="setLanguage('es')">Español</button>
+                            <button class="lang-btn ${currentLang === 'en' ? 'active' : ''}" onclick="setLanguage('en')">English</button>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    ${isMe ? `
+                    <div id="profileEditForm" style="display:none; width:100%; max-width:300px;">
+                <input type="text" id="editBio" class="edit-input" value="${user.bio}" placeholder="Short bio...">
+                <button onclick="saveProfile()" class="btn-primary" style="padding:8px; font-size:14px; margin-top:0;">${t('save')}</button>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+                <button onclick="toggleEditProfile()" id="editToggleBtn" style="background:none; border:1px solid var(--border-glass); padding:6px 12px; border-radius:12px; font-size:12px; cursor:pointer; color:var(--text-main); margin-top:12px;">${t('edit_profile')}</button>
+            </div>
+            ` : ''}
+            
+            <div class="profile-meta">${t('member_since')} ${(user.joined || 'Member since 2026').replace('Member since ', '')}</div>
+                </div>
+                
+                <h3 style="padding:16px 16px 0; font-size:16px;">${isMe ? t('my_listings') : t('listings')}</h3>
+                <div class="profile-items-grid">
+                    ${userItems.length === 0 ? `<div style="grid-column:1/-1; text-align:center; color:var(--text-secondary); padding:40px 20px;">
+                        <div style="font-size:40px; margin-bottom:8px;">📦</div>
+                        ${isMe ? t('no_own_listings') : t('no_user_listings')}
+                    </div>` : ''}
+                    ${userItems.map(item => `
+                        <div class="grid-item">
+                            <img src="${item.img}" loading="lazy">
+                            <div class="grid-price">$${item.price}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function toggleEditProfile() {
+            const info = document.getElementById('profileInfoDisplay');
+            const form = document.getElementById('profileEditForm');
+            const btn = document.getElementById('editToggleBtn');
+
+            if (form.style.display === 'none') {
+                info.style.display = 'none';
+                form.style.display = 'block';
+                btn.innerText = t('cancel');
+            } else {
+                info.style.display = 'block';
+                form.style.display = 'none';
+                btn.innerText = t('edit_profile');
+            }
+        }
+
+        function togglePassword(btn) {
+            const wrapper = btn.closest('.password-wrapper');
+            const input = wrapper.querySelector('input');
+            const icon = btn.querySelector('svg');
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                // Eye Off Icon
+                icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M1 1l22 22"></path><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"></path>';
+            } else {
+                input.type = 'password';
+                // Eye Icon
+                icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+            }
+        }
+
+        function updateProfileAvatar(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    ME.img = e.target.result;
+                    try { localStorage.setItem('nimbus_user', JSON.stringify(ME)); } catch (e) { }
+                    document.getElementById('profileImgPreview').src = ME.img;
+                    updateNavAvatar();
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function updateNavAvatar() {
+            const navImg = document.getElementById('navAvatarImg');
+            if (navImg && ME) navImg.src = ME.img;
+        }
+
+        function saveProfile() {
+            const bio = document.getElementById('editBio').value;
+            ME.bio = bio;
+            try { localStorage.setItem('nimbus_user', JSON.stringify(ME)); } catch (e) { }
+            renderProfile(ME.id);
+        }
+
+        function toggleLike(itemId) {
+            const item = items.find(i => i.id === itemId);
+            if (!item) return;
+
+            if (item.likedByMe) {
+                item.likes--;
+                item.likedByMe = false;
+            } else {
+                item.likes++;
+                item.likedByMe = true;
+            }
+            renderFeed();
+        }
+
+        function logout() {
+            localStorage.removeItem('nimbus_user');
+            // Optional: Keep welcome seen? Yes.
+            // localStorage.removeItem('nimbus_welcome_seen'); 
+            location.reload(); // Reload to reset state to login
+        }
+
+        function renderStories() {
+            const container = document.querySelector('.stories-container');
+            container.innerHTML = USERS.map(u => `
+                <div class="story-item" onclick="switchView('profileView', ${u.id})" style="cursor: pointer;">
+                    <div class="story-ring">
+                        <div class="story-avatar">
+                            <img src="${u.img}" alt="${u.name}">
+                        </div>
+                    </div>
+                    <span class="story-name">${u.name === 'You' ? t('you') : u.name}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderFeed() {
+            const container = document.getElementById('feed');
+            container.innerHTML = items.map(item => `
+                <div class="card glass">
+                    <div class="card-header" style="padding: 12px 16px 0;">
+                        <div style="display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="switchView('profileView', ${item.user.id})">
+                            <div class="avatar-sm" style="width: 32px; height: 32px;">
+                                <img src="${item.user.img}" alt="${item.user.name}">
+                            </div>
+                            <span style="font-weight:600; font-size:14px;">${item.user.name}</span>
+                        </div>
+                        <svg class="icon" style="width:20px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
+                    </div>
+
+                    <div class="card-image" style="margin-top:12px;">
+                        <img src="${item.img}" loading="lazy" alt="${item.title}">
+                        <div class="price-tag">$${item.price}</div>
+                    </div>
+
+                    <div class="card-content">
+                        <div class="card-actions" style="margin-bottom:12px;">
+                            <button class="action-btn" onclick="toggleLike(${item.id})">
+                                <svg class="icon" style="fill:${item.likedByMe ? 'var(--accent-secondary)' : 'rgba(255,0,85,0.2)'}; stroke:var(--accent-secondary); transition: all 0.2s;" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                                ${item.likes}
+                            </button>
+                            <button class="action-btn" onclick="startChat(${item.id})">
+                                <svg class="icon" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                                ${t('msg_seller')}
+                            </button>
+                        </div>
+
+                        <div class="card-title">${item.title}</div>
+                        <div class="card-desc">
+                            ${item.desc}
+                        </div>
+                        <div class="time-ago">${item.time}</div>
+
+                        <!-- Comments Section -->
+                        <div class="comments-section">
+                            <div id="comments-${item.id}">
+                                ${item.comments.map(c => `
+                                    <div class="comment">
+                                        <img src="${c.user.img}" class="comment-avatar">
+                                        <div class="comment-content">
+                                            <b>${c.user.name}</b> ${c.text}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="comment-input-area">
+                                <input type="text" class="comment-input" id="input-${item.id}" placeholder="${t('global_comment')}" onkeypress="handleCommentEnter(event, ${item.id})">
+                                <button onclick="postComment(${item.id})" style="border:none; background:none; color:var(--accent-primary); font-weight:600;">${t('post')}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function handleCommentEnter(e, itemId) {
+            if (e.key === 'Enter') postComment(itemId);
+        }
+
+        function postComment(itemId) {
+            const input = document.getElementById(`input-${itemId}`);
+            const text = input.value.trim();
+            if (!text) return;
+
+            const item = items.find(i => i.id === itemId);
+            if (!item) return;
+
+            // Mock current user
+            // ME is defined globally now
+
+            item.comments.push({ user: ME, text: text });
+
+            // Re-render only the comments list for this item to avoid flicker (opt) - or simple re-render
+            // For simplicity in single file, valid to re-render feed or just append.
+            // Let's just append mostly or re-render feed. Re-rendering feed is safest for state sync.
+            renderFeed();
+            // Refocus input?
+            // Better to partial update if we can, but renderFeed is snappy enough.
+        }
+
+        // --- Chat Logic ---
+
+        function renderChatsList() {
+            const container = document.getElementById('chatsListContainer');
+            if (chats.length === 0) {
+                container.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-secondary);">${t('no_messages')}</div>`;
+                return;
+            }
+
+            container.innerHTML = chats.map(chat => {
+                const otherUser = chat.participants.find(p => p.name !== 'You');
+                const lastMsg = chat.messages[chat.messages.length - 1];
+                return `
+                <div class="chat-list-item" onclick="openChatThread(${chat.id})">
+                    <div class="avatar-sm">
+                        <img src="${otherUser.img}">
+                    </div>
+                    <div class="chat-info">
+                        <div style="font-weight:600;">${otherUser.name}</div>
+                        <div class="chat-preview">${chat.item.title} &middot; ${lastMsg ? lastMsg.text : 'No messages'}</div>
+                    </div>
+                    <div class="avatar-sm" style="width:40px; height:40px; border-radius:8px;">
+                        <img src="${chat.item.img}" style="border-radius:8px;">
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function startChat(itemId) {
+            const item = items.find(i => i.id === itemId);
+            // Check if chat exists
+            let chat = chats.find(c => c.item.id === itemId);
+
+            if (!chat) {
+                // Create new chat
+                chat = {
+                    id: Date.now(),
+                    participants: [item.user, ME],
+                    item: item,
+                    messages: [] // Empty start
+                };
+                chats.unshift(chat);
+            }
+
+            openChatThread(chat.id);
+        }
+
+        function openChatThread(chatId) {
+            activeChatId = chatId;
+            switchView('chatThreadView');
+            renderChatThread();
+            // Scroll to bottom
+            setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 50);
+        }
+
+        function renderChatThread() {
+            const chat = chats.find(c => c.id === activeChatId);
+            if (!chat) return;
+
+            const otherUser = chat.participants.find(p => p.name !== 'You');
+            const container = document.getElementById('chatThreadView');
+
+            container.innerHTML = `
+                <div class="chat-thread-header">
+                    <button onclick="switchView('chatsView')" style="background:none; border:none; color:var(--text-main);">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+                    </button>
+                    <div class="avatar-sm" style="width:32px; height:32px;">
+                        <img src="${otherUser.img}">
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-weight:600;">${otherUser.name}</div>
+                        <div style="font-size:11px; color:var(--text-secondary);">${chat.item.title} - $${chat.item.price}</div>
+                    </div>
+                </div>
+                
+                <div class="messages-container" id="msgContainer">
+                    ${chat.messages.length === 0 ? `<div style="text-align:center; color:var(--text-secondary); font-size:12px; margin-top:20px;">${t('start_conv')}</div>` : ''}
+                    ${chat.messages.map(m => `
+                        <div class="message-bubble ${m.sender === 'me' ? 'me' : 'them'}">
+                            ${m.text}
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="chat-input-bar">
+                    <input type="text" class="input-field" id="chatInput" placeholder="Message..." onkeypress="handleChatEnter(event)">
+                    <button class="btn-primary" style="width:auto; margin:0; padding:10px 16px;" onclick="sendMessage()">Send</button>
+                </div>
+            `;
+        }
+
+        function handleChatEnter(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const chat = chats.find(c => c.id === activeChatId);
+            if (!chat) return;
+
+            chat.messages.push({ sender: 'me', text: text });
+
+            // Mock reply
+            if (chat.messages.length === 1) {
+                setTimeout(() => {
+                    chat.messages.push({ sender: 'them', text: 'Hey! Thanks for the message.' });
+                    renderChatThread();
+                }, 1500);
+            }
+
+            input.value = '';
+            renderChatThread();
+            setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 50);
+        }
+
+        // --- Interaction Logic ---
+        function toggleAccountMenu() {
+            const modal = document.getElementById('accountModal');
+            modal.classList.toggle('open');
+            // Update lang display
+            const disp = document.getElementById('langDisplay');
+            if (disp) disp.innerText = currentLang.toUpperCase();
+        }
+
+        function openMyProfile() {
+            toggleAccountMenu(); // Close menu
+            switchView('profileView', ME.id);
+        }
+
+        function menuEditProfile() {
+            toggleAccountMenu(); // Close menu
+            switchView('profileView', ME.id);
+            // Wait for view switch then toggle edit
+            setTimeout(() => {
+                const form = document.getElementById('profileEditForm');
+                if (form && form.style.display === 'none') {
+                    toggleEditProfile();
+                }
+            }, 100);
+        }
+
+        function toggleLanguage() {
+            setLanguage(currentLang === 'es' ? 'en' : 'es');
+        }
+
+        function toggleSellModal() {
+            const modal = document.getElementById('sellModal');
+            modal.classList.toggle('open');
+
+            // Reset modal state when opening/closing if needed (optional)
+        }
+
+        // --- Photo Upload Logic ---
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const listBtn = document.getElementById('listBtn');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            const validFiles = Array.from(files).filter(file =>
+                ['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)
+            );
+
+            if (uploadedFiles.length + validFiles.length > 5) {
+                alert('Max 5 images allowed');
+                return;
+            }
+
+            uploadedFiles = [...uploadedFiles, ...validFiles];
+            renderPreviews();
+            updateButtonState();
+        }
+
+        function renderPreviews() {
+            const container = document.getElementById('previewContainer');
+            container.innerHTML = '';
+
+            uploadedFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const div = document.createElement('div');
+                    div.className = 'preview-wrapper';
+                    div.innerHTML = `
+                        <img src="${e.target.result}" class="preview-thumb">
+                        <div class="remove-btn" onclick="removeImage(${index})">×</div>
+                     `;
+                    container.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function removeImage(index) {
+            uploadedFiles.splice(index, 1);
+            renderPreviews();
+            updateButtonState();
+        }
+
+        function updateButtonState() {
+            listBtn.disabled = uploadedFiles.length === 0;
+        }
+
+
+        function postItem() {
+            const title = document.getElementById('itemTitle').value;
+            const price = document.getElementById('itemPrice').value;
+            const desc = document.getElementById('itemDesc').value;
+
+            if (uploadedFiles.length === 0) {
+                alert('Please upload at least one photo');
+                return;
+            }
+
+            if (!title || !price) {
+                alert('Please fill in title and price');
+                return;
+            }
+
+            // Mock uploading logic - use first image as display
+            // In a real app, we'd upload all files and get URLs back
+            const reader = new FileReader();
+            reader.readAsDataURL(uploadedFiles[0]);
+
+            reader.onload = function (e) {
+                const newItem = {
+                    id: Date.now(),
+                    user: ME, // Current user
+                    title: title,
+                    price: price,
+                    desc: desc || 'No description provided.',
+                    img: e.target.result, // Use the base64 string
+                    time: 'Just now',
+                    likes: 0,
+                    comments: []
+                };
+
+                items.unshift(newItem); // Add to top
+                renderFeed();
+
+                // Clear inputs
+                document.getElementById('itemTitle').value = '';
+                document.getElementById('itemPrice').value = '';
+                document.getElementById('itemDesc').value = '';
+                uploadedFiles = [];
+                document.getElementById('fileInput').value = '';
+                renderPreviews();
+                updateButtonState();
+
+                toggleSellModal();
+            };
+        }
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderStories();
+
+            // Persistent Login Check
+            if (localStorage.getItem('nimbus_user')) {
+                // Session exists, auto-login
+                handleLogin();
+            } else {
+                // No session, show login
+                switchView('loginView');
+            }
+
+            // Set initial dynamic text
+            updateUIText();
+        });
+
+        // Close modal on click outside
+        document.getElementById('sellModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('sellModal')) {
+                toggleSellModal();
+            }
+        });
+
+    </script>
+</body>
+
+</html>
