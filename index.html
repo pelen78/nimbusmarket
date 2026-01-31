@@ -1442,25 +1442,26 @@
                 switchView('feed');
             }
         }
-       async function handleSignup() {
+async function handleSignup() {
   try {
+    // 1️⃣ Leer valores del form
     const inviteCode = document.getElementById("regInvite").value.trim().toUpperCase();
-    const name = document.getElementById('regName').value;
-    const email = document.getElementById('regEmail').value;
-    const pass = document.getElementById('regPass').value;
-    const passConfirm = document.getElementById('regPassConfirm').value;
+    const name = document.getElementById("regName").value;
+    const email = document.getElementById("regEmail").value;
+    const pass = document.getElementById("regPass").value;
+    const passConfirm = document.getElementById("regPassConfirm").value;
 
-    if (!inviteCode || !name || !email || !pass) {
-      alert('Please fill in all required fields.');
+    if (!name || !email || !pass) {
+      alert("Please fill in all required fields.");
       return;
     }
 
     if (pass !== passConfirm) {
-      alert('Passwords do not match.');
+      alert("Passwords do not match.");
       return;
     }
 
-    // 🔍 1. Validar código en Firestore
+    // 2️⃣ Validar código en Firestore
     const codeRef = doc(db, "inviteCodes", inviteCode);
     const snap = await getDoc(codeRef);
 
@@ -1474,31 +1475,37 @@
       return;
     }
 
-    // 👤 2. Crear usuario (tu lógica actual)
+    // 3️⃣ Crear usuario en Firebase Auth (ESTO ES CLAVE 🔥)
+    const auth = getAuth();
+    await createUserWithEmailAndPassword(auth, email, pass);
+    // ⬆️ aquí el usuario YA queda autenticado
+
+    // 4️⃣ Marcar código como usado (ahora sí lo permiten las rules)
+    await updateDoc(codeRef, { used: true });
+
+    // 5️⃣ Crear usuario local (tu lógica actual)
     ME = {
       id: Date.now(),
       name: name,
       email: email,
-      img: 'https://i.pravatar.cc/150?u=me',
-      bio: '',
-      joined: 'Member since ' + new Date().getFullYear()
+      img: "https://i.pravatar.cc/150?u=me",
+      bio: "",
+      joined: "Member since " + new Date().getFullYear()
     };
 
     USERS.push(ME);
-    localStorage.setItem('nimbus_user', JSON.stringify(ME));
-    localStorage.removeItem('nimbus_welcome_seen');
+    localStorage.setItem("nimbus_user", JSON.stringify(ME));
+    localStorage.removeItem("nimbus_welcome_seen");
 
-    // ✅ 3. Marcar código como usado
-    await updateDoc(codeRef, { used: true });
-
-    // 🚀 Entrar
+    // 6️⃣ Entrar
     handleLogin();
 
   } catch (err) {
     console.error(err);
-    alert("Error validando código");
+    alert("Error creando cuenta: " + err.message);
   }
 }
+
 
         function closeWelcome() {
             const modal = document.getElementById('welcomeModal');
