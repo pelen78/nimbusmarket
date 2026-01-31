@@ -1443,49 +1443,61 @@
             }
         }
        async function handleSignup() {
-
-    if (!checkInviteCode()) return;
-
+  try {
+    const inviteCode = document.getElementById("regInvite").value.trim().toUpperCase();
     const name = document.getElementById('regName').value;
     const email = document.getElementById('regEmail').value;
     const pass = document.getElementById('regPass').value;
     const passConfirm = document.getElementById('regPassConfirm').value;
 
-    if (!name || !email || !pass) {
-        alert('Please fill in all required fields.');
-        return;
+    if (!inviteCode || !name || !email || !pass) {
+      alert('Please fill in all required fields.');
+      return;
     }
 
     if (pass !== passConfirm) {
-        alert('Passwords do not match.');
-        return;
+      alert('Passwords do not match.');
+      return;
     }
 
+    // 🔍 1. Validar código en Firestore
+    const codeRef = doc(db, "inviteCodes", inviteCode);
+    const snap = await getDoc(codeRef);
+
+    if (!snap.exists()) {
+      alert("Código de invitación inválido");
+      return;
+    }
+
+    if (snap.data().used === true) {
+      alert("Este código ya fue usado");
+      return;
+    }
+
+    // 👤 2. Crear usuario (tu lógica actual)
     ME = {
-        id: Date.now(),
-        name,
-        email,
-        img: 'https://i.pravatar.cc/150?u=me',
-        bio: '',
-        joined: 'Member since ' + new Date().getFullYear()
+      id: Date.now(),
+      name: name,
+      email: email,
+      img: 'https://i.pravatar.cc/150?u=me',
+      bio: '',
+      joined: 'Member since ' + new Date().getFullYear()
     };
 
     USERS.push(ME);
-
-    try {
-        const inviteCode = document.getElementById("regInvite").value.trim().toUpperCase();
-        const codeRef = doc(db, "inviteCodes", inviteCode);
-        await updateDoc(codeRef, { used: true });
-    } catch (err) {
-        alert("Error validando código");
-        console.error(err);
-        return;
-    }
-
     localStorage.setItem('nimbus_user', JSON.stringify(ME));
     localStorage.removeItem('nimbus_welcome_seen');
 
+    // ✅ 3. Marcar código como usado
+    await updateDoc(codeRef, { used: true });
+
+    // 🚀 Entrar
     handleLogin();
+
+  } catch (err) {
+    console.error(err);
+    alert("Error validando código");
+  }
 }
 
         function closeWelcome() {
