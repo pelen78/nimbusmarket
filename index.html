@@ -2081,50 +2081,44 @@ async function handleSignup() {
 </script>
 
 
-  // 🔁 Hacemos global la función para que el HTML la pueda usar
-  window.checkInviteCode = async function () {
-    const code = document.getElementById('regInvite').value.trim().toUpperCase();
-    const btn = document.getElementById('signupBtn');
-    const feedback = document.getElementById('inviteFeedback');
+ 
+</script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
 
-    if (!code) {
-      btn.disabled = true;
-      feedback.innerText = t('invited_only');
-      feedback.style.color = 'var(--text-secondary)';
-      return false;
-    }
+  import { 
+    getFirestore, 
+    doc, 
+    getDoc, 
+    updateDoc 
+  } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-    try {
-      const ref = doc(db, "inviteCodes", code);
-      const snap = await getDoc(ref);
+  import {
+    getAuth,
+    createUserWithEmailAndPassword
+  } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 
-      if (!snap.exists()) {
-        btn.disabled = true;
-        feedback.innerText = t('invalid_code');
-        feedback.style.color = '#ff4444';
-        return false;
-      }
+  const firebaseConfig = {
+    apiKey: "AIzaSyDp3nG7apyi9WqsXneUrYy8zWN-8AsQoR4",
+    authDomain: "nimbus-market.firebaseapp.com",
+    projectId: "nimbus-market",
+    storageBucket: "nimbus-market.firebasestorage.app",
+    messagingSenderId: "223771486178",
+    appId: "1:223771486178:web:75b13cbf37590783c33bbb"
+  };
 
-      if (snap.data().used) {
-        btn.disabled = true;
-        feedback.innerText = "Este código ya fue usado";
-        feedback.style.color = '#ff4444';
-        return false;
-      }
+  const app = initializeApp(firebaseConfig);
 
-      // ✅ Código válido
-      btn.disabled = false;
-      feedback.innerText = "";
-      return true;
+  const db = getFirestore(app);
+  const auth = getAuth(app);
 
-    } catch (err) {
-      console.error(err);
-      btn.disabled = true;
-      feedback.innerText = "Error validando código";
-      feedback.style.color = '#ff4444';
-      return false;
-    }
-  }
+  // 👉 Exponer a window para el resto del archivo
+  window.db = db;
+  window.auth = auth;
+  window.doc = doc;
+  window.getDoc = getDoc;
+  window.updateDoc = updateDoc;
+  window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
 </script>
 
 </body>
