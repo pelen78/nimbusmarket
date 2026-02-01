@@ -2078,47 +2078,54 @@ async function handleSignup() {
   window.doc = doc;
   window.getDoc = getDoc;
   window.updateDoc = updateDoc;
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-
-  import { 
-    getFirestore, 
-    doc, 
-    getDoc, 
-    updateDoc 
-  } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
-
-  import {
-    getAuth,
-    createUserWithEmailAndPassword
-  } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyDp3nG7apyi9WqsXneUrYy8zWN-8AsQoR4",
-    authDomain: "nimbus-market.firebaseapp.com",
-    projectId: "nimbus-market",
-    storageBucket: "nimbus-market.firebasestorage.app",
-    messagingSenderId: "223771486178",
-    appId: "1:223771486178:web:75b13cbf37590783c33bbb"
-  };
-
-  // 🔥 UNA SOLA inicialización
-  const app = initializeApp(firebaseConfig);
-
-  const db = getFirestore(app);
-  const auth = getAuth(app);
-
-  // 🌍 Exponer a window (CLAVE)
-  window.db = db;
-  window.auth = auth;
-  window.doc = doc;
-  window.getDoc = getDoc;
-  window.updateDoc = updateDoc;
-  window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
 </script>
 
 
+  // 🔁 Hacemos global la función para que el HTML la pueda usar
+  window.checkInviteCode = async function () {
+    const code = document.getElementById('regInvite').value.trim().toUpperCase();
+    const btn = document.getElementById('signupBtn');
+    const feedback = document.getElementById('inviteFeedback');
 
+    if (!code) {
+      btn.disabled = true;
+      feedback.innerText = t('invited_only');
+      feedback.style.color = 'var(--text-secondary)';
+      return false;
+    }
+
+    try {
+      const ref = doc(db, "inviteCodes", code);
+      const snap = await getDoc(ref);
+
+      if (!snap.exists()) {
+        btn.disabled = true;
+        feedback.innerText = t('invalid_code');
+        feedback.style.color = '#ff4444';
+        return false;
+      }
+
+      if (snap.data().used) {
+        btn.disabled = true;
+        feedback.innerText = "Este código ya fue usado";
+        feedback.style.color = '#ff4444';
+        return false;
+      }
+
+      // ✅ Código válido
+      btn.disabled = false;
+      feedback.innerText = "";
+      return true;
+
+    } catch (err) {
+      console.error(err);
+      btn.disabled = true;
+      feedback.innerText = "Error validando código";
+      feedback.style.color = '#ff4444';
+      return false;
+    }
+  }
+</script>
 
 </body>
 
