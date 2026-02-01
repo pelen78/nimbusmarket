@@ -2050,39 +2050,6 @@ async function handleSignup() {
                 toggleSellModal();
             }
         });
-
-    </script>
-   <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-  import { 
-    getFirestore, 
-    doc, 
-    getDoc, 
-    updateDoc 
-  } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyDp3nG7apyi9WqsXneUrYy8zWN-8AsQoR4",
-    authDomain: "nimbus-market.firebaseapp.com",
-    projectId: "nimbus-market",
-    storageBucket: "nimbus-market.firebasestorage.app",
-    messagingSenderId: "223771486178",
-    appId: "1:223771486178:web:75b13cbf37590783c33bbb"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // 👇 EXPONER A WINDOW (CLAVE)
-  window.db = db;
-  window.doc = doc;
-  window.getDoc = getDoc;
-  window.updateDoc = updateDoc;
-</script>
-
-
- 
-</script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
 
@@ -2107,12 +2074,13 @@ async function handleSignup() {
     appId: "1:223771486178:web:75b13cbf37590783c33bbb"
   };
 
+  // 🔥 UNA SOLA inicialización
   const app = initializeApp(firebaseConfig);
 
   const db = getFirestore(app);
   const auth = getAuth(app);
 
-  // 👉 Exponer a window para el resto del archivo
+  // 🌍 Exponer a window (CLAVE)
   window.db = db;
   window.auth = auth;
   window.doc = doc;
@@ -2120,6 +2088,7 @@ async function handleSignup() {
   window.updateDoc = updateDoc;
   window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
 </script>
+
 
 </body>
 
