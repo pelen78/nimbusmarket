@@ -1,0 +1,1 @@
+{"name":"nimbus-market","private":true,"type":"module","scripts":{"test:rules":"firebase emulators:exec --project demo-nimbus-market --only firestore 'node --test tests/rules.test.mjs'"},"devDependencies":{"@firebase/rules-unit-testing":"^5.0.0","firebase":"^12.8.0","firebase-tools":"^15.0.0"}}

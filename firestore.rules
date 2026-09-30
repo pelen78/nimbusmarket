@@ -1,0 +1,47 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function verified() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+    function email() { return request.auth.token.email.lower(); }
+    function validInvite(code) {
+      let invite = get(/databases/$(database)/documents/inviteCodes/$(code)).data;
+      return invite.used == false && invite.email == email()
+        && invite.expiresAt is timestamp && invite.expiresAt > request.time;
+    }
+    match /inviteCodes/{code} {
+      // Even an authenticated user cannot enumerate invitations.
+      allow get: if verified() && resource.data.email == email();
+      allow list, create, delete: if false;
+      allow update: if verified() && validInvite(code)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used', 'usedBy', 'usedAt'])
+        && request.resource.data.used == true
+        && request.resource.data.usedBy == request.auth.uid
+        && request.resource.data.usedAt == request.time
+        && !exists(/databases/$(database)/documents/members/$(request.auth.uid))
+        && getAfter(/databases/$(database)/documents/members/$(request.auth.uid)).data.inviteCode == code;
+    }
+    match /members/{uid} {
+      allow get: if verified() && request.auth.uid == uid;
+      allow list, update, delete: if false;
+      allow create: if verified() && request.auth.uid == uid
+        && request.resource.data.keys().hasAll(['email','displayName','status','inviteCode','joinedAt'])
+        && request.resource.data.keys().hasOnly(['email','displayName','status','inviteCode','joinedAt'])
+        && request.resource.data.email == email()
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() >= 1
+        && request.resource.data.displayName.size() <= 80
+        && request.resource.data.status == 'active'
+        && request.resource.data.inviteCode is string
+        && request.resource.data.inviteCode.matches('^[A-F0-9]{32}$')
+        && request.resource.data.joinedAt == request.time
+        && validInvite(request.resource.data.inviteCode)
+        && getAfter(/databases/$(database)/documents/inviteCodes/$(request.resource.data.inviteCode)).data.used == true
+        && getAfter(/databases/$(database)/documents/inviteCodes/$(request.resource.data.inviteCode)).data.usedBy == uid
+        && getAfter(/databases/$(database)/documents/inviteCodes/$(request.resource.data.inviteCode)).data.usedAt == request.time;
+    }
+    // Listings, photos and chat are a later phase; they stay closed.
+    match /{document=**} { allow read, write: if false; }
+  }
+}
