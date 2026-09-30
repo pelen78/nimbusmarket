@@ -1,0 +1,56 @@
+const image=(id,w=700)=>`https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=85`;
+const items=[
+{id:9,title:'Lámpara · anuncio de prueba',price:450,category:'Hogar',condition:'Tu anuncio de prueba',seller:'Tú',initial:'T',location:'Tu círculo',photo:image('photo-1507473885765-e6ed057f782c'),description:'Así se verá tu anuncio con una foto, su precio y una descripción. Este es solo un ejemplo para probar el diseño.'},
+{id:1,title:'Silla para escritorio',price:1800,category:'Hogar',condition:'Como nuevo',seller:'Ana',initial:'A',location:'Zona sur',photo:image('photo-1592078615290-033ee584e267'),description:'Mi rincón favorito para leer. Es cómodo, ligero y está muy cuidado. Lo vendo porque cambié la distribución de la sala. Se entrega limpio; podemos acordar la recogida.'},
+{id:2,title:'Audífonos inalámbricos',price:950,category:'Tecnología',condition:'Muy buen estado',seller:'Diego',initial:'D',location:'Centro',photo:image('photo-1546435770-a3e426bf472b'),description:'Para trabajar, escuchar música o desconectarte un rato. Funcionan bien y los he cuidado mucho. Incluyen su cable de carga.'},
+{id:3,title:'Lámpara de mesa',price:450,category:'Hogar',condition:'Como nueva',seller:'Sofía',initial:'S',location:'Zona poniente',photo:image('photo-1507473885765-e6ed057f782c'),description:'Luz cálida para una mesa de noche o tu escritorio. Tiene poco uso y funciona perfectamente. Una pequeña pieza que cambia todo un rincón.'},
+{id:4,title:'Bicicleta para la ciudad',price:3200,category:'Deportes',condition:'Buen estado',seller:'Luis',initial:'L',location:'Zona norte',photo:image('photo-1485965120184-e220f721d03e'),description:'Lista para pasear por el barrio. Tiene algunas marcas normales de uso. Puedes verla y probarla antes de decidir.'},
+{id:5,title:'Sofá verde',price:4200,category:'Hogar',condition:'Muy buen estado',seller:'Mariana',initial:'M',location:'Zona sur',photo:image('photo-1555041469-a586c61ea9bc'),description:'Un sofá cómodo para espacios pequeños. Lo hemos disfrutado mucho y aún tiene muchas tardes de películas por delante. La entrega se acuerda con quien lo compre.'},
+{id:6,title:'Tenis deportivos',price:650,category:'Ropa',condition:'Poco uso',seller:'Pablo',initial:'P',location:'Centro',photo:image('photo-1542291026-7eec264c27ff'),description:'Tenis rojos con muy poco uso. Están limpios y se conservan en buen estado. Pregúntame por las medidas antes de decidir.'},
+{id:7,title:'Libros para una nueva repisa',price:300,category:'Libros',condition:'Buen estado',seller:'Elena',initial:'E',location:'Zona poniente',photo:image('photo-1495446815901-a7297e633e8d'),description:'Una selección de lecturas que ya disfruté y me gustaría que alguien más descubriera. Puedo compartirte los títulos y más fotos por mensaje.'},
+{id:8,title:'Cuadros para tu espacio',price:550,category:'Hogar',condition:'Como nuevos',seller:'Clara',initial:'C',location:'Zona norte',photo:image('photo-1513519245088-0e12902e5a38'),description:'Detalles para darle personalidad a una pared. Los marcos están muy cuidados. Podemos revisar juntos las medidas y acordar la entrega.'}
+];
+const $=id=>document.getElementById(id);
+const money=n=>new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN',maximumFractionDigits:0}).format(n);
+const escapeHTML=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const normalize=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const saved=new Set();let category='Todos',onlySaved=false,currentItem=null,previewPhoto=null,toastTimer;
+function toast(text){$('toast').textContent=text;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),2800)}
+function render(){
+ const q=normalize($('searchInput').value.trim());
+ let list=items.filter(p=>(category==='Todos'||p.category===category)&&(!onlySaved||saved.has(p.id))&&(!q||normalize(p.title+' '+p.category+' '+p.seller).includes(q)));
+ if($('sort').value==='low')list.sort((a,b)=>a.price-b.price);if($('sort').value==='high')list.sort((a,b)=>b.price-a.price);
+ $('productGrid').innerHTML=list.map((p,i)=>`<article class="product" style="animation-delay:${Math.min(i*35,175)}ms"><button class="product-image" data-detail="${p.id}" aria-label="Ver ${escapeHTML(p.title)}, ${money(p.price)}"><img src="${escapeHTML(p.photo)}" alt="${escapeHTML(p.title)}" ${i>3?'loading="lazy"':''}><span class="condition">${escapeHTML(p.condition)}</span></button><button class="favorite ${saved.has(p.id)?'saved':''}" data-save="${p.id}" aria-label="${saved.has(p.id)?'Quitar de guardados':'Guardar'} ${escapeHTML(p.title)}" aria-pressed="${saved.has(p.id)}"><svg><use href="#heartIcon"/></svg></button><div class="product-body"><div class="product-head"><span class="price">${money(p.price)}</span></div><h3>${escapeHTML(p.title)}</h3><div class="seller"><span class="seller-avatar">${escapeHTML(p.initial)}</span><span>${escapeHTML(p.seller)}</span><span class="location">${escapeHTML(p.location)}</span></div></div></article>`).join('');
+ $('emptyState').hidden=list.length>0;
+ $('resultsText').textContent=onlySaved?`Tus guardados · ${list.length}`:q||category!=='Todos'?`${list.length} ${list.length===1?'artículo encontrado':'artículos encontrados'}`:'Recién publicados en tu círculo';
+ if(onlySaved&&!list.length){$('emptyState').querySelector('h3').textContent='Aquí van tus buenos hallazgos';$('emptyState').querySelector('p').textContent='Toca el corazón de un artículo para guardarlo.';}else{$('emptyState').querySelector('h3').textContent='Aún no encontramos eso';$('emptyState').querySelector('p').textContent='Prueba con otra palabra o explora todas las categorías.';}
+ $('clearFilters').hidden=!q&&category==='Todos'&&!onlySaved;
+ const count=document.querySelector('.saved-count');count.textContent=saved.size;count.hidden=!saved.size;
+ $('savedButton').setAttribute('aria-pressed',onlySaved);
+ document.querySelectorAll('[data-category]').forEach(b=>{const selected=b.dataset.category===category;b.classList.toggle('selected',selected);b.setAttribute('aria-pressed',selected)});
+}
+function reset(){category='Todos';onlySaved=false;$('searchInput').value='';$('sort').value='recent';render()}
+function detail(id){const p=items.find(x=>x.id===id);currentItem=p;$('detailContent').innerHTML=`<div class="detail-grid"><img class="detail-image" src="${escapeHTML(p.photo)}" alt="${escapeHTML(p.title)}"><div class="detail-info"><span class="eyebrow">${escapeHTML(p.category.toUpperCase())} · ${escapeHTML(p.location.toUpperCase())}</span><h2>${escapeHTML(p.title)}</h2><div class="detail-price">${money(p.price)} <small style="font:11px var(--font);color:var(--muted)">MXN</small></div><span class="detail-condition">${escapeHTML(p.condition)}</span><p class="description">${escapeHTML(p.description)}</p><div class="seller"><span class="seller-avatar">${escapeHTML(p.initial)}</span><span>Lo vende <strong>${escapeHTML(p.seller)}</strong><br><small>Parte de tu círculo · Perfil de ejemplo</small></span></div><button class="primary" id="contactButton">Me interesa <span>↗</span></button><span class="detail-note">Pónganse de acuerdo para el pago y la entrega.</span></div></div>`;$('productDialog').showModal();$('contactButton').onclick=()=>{$('productDialog').close();$('contactTitle').textContent=`Escribirle a ${p.seller}`;$('contactDialog').showModal()}}
+$('productGrid').addEventListener('click',e=>{const button=e.target.closest('button');if(!button)return;if(button.dataset.detail)detail(Number(button.dataset.detail));if(button.dataset.save){const id=Number(button.dataset.save);const wasSaved=saved.has(id);wasSaved?saved.delete(id):saved.add(id);render();toast(wasSaved?'Artículo eliminado de tus guardados':'Guardado para verlo después');const replacement=$('productGrid').querySelector(`[data-save="${id}"]`);replacement?.focus({preventScroll:true})}});
+document.querySelectorAll('[data-category]').forEach(button=>button.onclick=()=>{category=button.dataset.category;render()});
+$('searchInput').addEventListener('input',render);$('searchForm').onsubmit=e=>{e.preventDefault();render();$('catalog').scrollIntoView({behavior:'smooth'})};$('sort').onchange=render;
+$('clearFilters').onclick=reset;$('resetSearch').onclick=reset;document.querySelector('.brand').onclick=reset;
+function toggleSaved(){onlySaved=!onlySaved;category='Todos';$('searchInput').value='';render();$('catalog').scrollIntoView({behavior:'smooth'})}
+$('savedButton').onclick=toggleSaved;$('profileSaved').onclick=()=>{onlySaved=false;toggleSaved();$('profileMenu').hidden=true;$('profileButton').setAttribute('aria-expanded',false)};
+$('profileButton').onclick=()=>{$('profileMenu').hidden=!$('profileMenu').hidden;$('profileButton').setAttribute('aria-expanded',!$('profileMenu').hidden)};
+document.addEventListener('click',e=>{if(!e.target.closest('#profileMenu')&&!e.target.closest('#profileButton')){$('profileMenu').hidden=true;$('profileButton').setAttribute('aria-expanded',false)}});
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>b.closest('dialog').close());
+document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close()}}));
+$('publishButton').onclick=$('sellButton').onclick=()=>$('publishDialog').showModal();$('messagePreview').onclick=()=>$('contactDialog').close();
+$('examplePhoto').onclick=()=>{
+ if(previewPhoto?.startsWith('blob:'))URL.revokeObjectURL(previewPhoto);
+ previewPhoto=image('photo-1507473885765-e6ed057f782c');
+ $('photoInput').value='';$('photoInput').required=false;
+ $('photoPreview').src=previewPhoto;$('photoPreview').hidden=false;
+ if(!$('itemTitle').value)$('itemTitle').value='Lámpara · anuncio de prueba';
+ if(!$('itemPrice').value)$('itemPrice').value='450';
+ if(!$('itemDescription').value)$('itemDescription').value='Así se verá tu anuncio con una foto, su precio y una descripción. Este es solo un ejemplo para probar el diseño.';
+};
+$('photoInput').onchange=()=>{const file=$('photoInput').files[0];if(!file)return;if(!file.type.startsWith('image/')){toast('Elige un archivo de imagen');$('photoInput').value='';return}if(file.size>12*1024*1024){toast('Elige una foto de menos de 12 MB');$('photoInput').value='';return}if(previewPhoto)URL.revokeObjectURL(previewPhoto);previewPhoto=URL.createObjectURL(file);$('photoPreview').src=previewPhoto;$('photoPreview').hidden=false};
+$('publishForm').onsubmit=e=>{e.preventDefault();if(!previewPhoto||!$('itemTitle').value.trim()||!$('itemDescription').value.trim())return;items.unshift({id:Date.now(),title:$('itemTitle').value.trim(),price:Number($('itemPrice').value),category:$('itemCategory').value,condition:'Tu anuncio de prueba',seller:'Tú',initial:'P',location:'Tu círculo',photo:previewPhoto,description:$('itemDescription').value.trim()});previewPhoto=null;$('photoInput').required=true;$('publishDialog').close();$('publishForm').reset();$('photoPreview').hidden=true;reset();$('catalog').scrollIntoView({behavior:'smooth'});toast('Tu anuncio de ejemplo está listo. No se ha publicado en internet.')};
+render();
